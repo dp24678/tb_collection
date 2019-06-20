@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/hint.base.min.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <title>淘宝数据抓取</title>
+  <style>
+    body {}
+
+    .container-fluid {
+      width: 86%;
+    }
+
+    .searchcon {
+      padding-top: 40px;
+      padding-bottom: 40px;
+      height: 100%;
+      -webkit-box-align: center;
+      align-items: center;
+      -webkit-box-pack: center;
+      justify-content: center;
+      display: flex;
+    }
+    .table-responsive {
+      padding-bottom: 500px;
+      overflow-y: -webkit-paged-y;
+    }
+
+
+    #tb_search_key {
+      width: 600px;
+    }
+
+    #tb_search_submit {
+      width: 150px;
+    }
+
+    #tb_order {
+      max-width: 120px;
+    }
+
+    .showImg img {
+      max-width: 30px;
+    }
+
+    .show_box img {
+      max-width: 100%;
+    }
+
+    #tbody_data * {
+      font-size: 0.9rem;
+    }
+    .dropdown {
+        position: absolute;
+        right: 7%;
+        top: 38px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid ">
+
+    <div class="row searchcon">
+      <div class="col-xs-12">
+        <form class="form-inline" onsubmit="return getList()">
+
+          <div class="form-group">
+            <select onclick="set_sort_value()" name="type" id="serachType" class="form-control">
+              <option value="PC">来源>>PC</option>
+{#              <option value="H5">来源>>手淘H5</option>#}
+              <option value="APP">来源>>手淘APP</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="sr-only" for="tb_search_key">关键字</label>
+            <input type="text" class="form-control w600" id="tb_search_key" placeholder="关键字">
+            <input type="hidden" id="guid" value="{{ guid }}">
+          </div>
+          <div class="form-group">
+            <select id="serachSort" class="form-control">
+              <option value="default">综合排序</option>
+              <option value="sale-desc">销量</option>
+              <option value="credit-desc">信用</option>
+              <option value="price-asc">价格从低到高</option>
+              <option value="price-desc">价格从高到低</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <select id="serachPage" class="form-control">
+              <option value="1">前1页</option>
+              <option value="2">前2页</option>
+              <option value="3">前3页</option>
+            </select>
+          </div>
+          <button type="submit" id="tb_search_submit" class="btn btn-info">搜索</button>
+        </form>
+      </div>
+    </div>
+
+{#    <div class="select-box">#}
+{#        <form class="form-inline">#}
+{#            <div class="radio"><label><input type="radio" name="radio" id="all" value="all" checked> 显示全部</label></div>#}
+{#            <div class="radio"><label><input type="radio" name="radio" id="tmall" value="tmall"> 仅显示天猫店</label></div>#}
+{#            <div class="radio"><label><input type="radio" name="radio" id="taobao" value="taobao"> 仅显示C店</label></div>#}
+{#            <div class="form-group">#}
+{#                <label class="sr-only" for="key1">卖家旺旺名称</label>#}
+{#                <input type="text" class="form-control input-sm" id="key1" placeholder="卖家旺旺名称">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <label class="sr-only" for="key2">标题关键词</label>#}
+{#                <input type="text" class="form-control input-sm" id="key2" placeholder="标题关键词">#}
+{#            </div>#}
+{#            <div class="form-group">#}
+{#                <label class="sr-only" for="key3">宝贝ID</label>#}
+{#                <input type="text" class="form-control input-sm" id="key3" placeholder="宝贝ID">#}
+{#            </div>#}
+{#            <button type="button" class="btn btn-info btn-sm" id="show-text">显示指定</button>#}
+{#            <button type="button" class="btn btn-info btn-sm" id="show-light">高亮显示</button>#}
+{#        </form>#}
+{#    </div>#}
+      <div class="dropdown special_dropdown">
+        <button type="button" data-toggle="dropdown" id="dLabel">
+            <input id="last-query" value="" type="hidden">
+            <a onclick="pageToExcel(webData);" id='excel-download' class="csv-down gray hint--top" target="_blank" data-hint="数据未加载完全，暂时不能下载">数据下载
+            </a>
+        </button>
+    </div>
+
+
+    <div class="row">
+      <div class="table-responsive">
+        <table id="datatable" class="table table-striped table-bordered table-hover table-sort tablesorter tablesorter-default">
+          <thead>
+            <tr class="table-head info tablesorter-headerRow">
+              <th scope="col" data-width="60px">序号</th>
+              <th scope="col" data-width="54px">图</th>
+              <th scope="col" data-width="468px">标题</th>
+              <th scope="col" data-width="90px">天猫/淘宝</th>
+              <th scope="col" data-width="60px">价格</th>
+              <th scope="col" data-width="60px">销量</th>
+              <th scope="col" data-width="60px">收货量</th>
+              <th scope="col" data-width="60px">库存</th>
+              <th scope="col" data-width="170px">店铺</th>
+              <th scope="col" data-width="54px">DSR</th>
+              <th scope="col" data-width="130px">信用</th>
+              <th scope="col" data-width="82px">发货地</th>
+              <th scope="col" data-width="82px">下架剩余</th>
+              <th scope="col" data-width="60px">收藏</th>
+              <th scope="col" data-width="60px">评价</th>
+              <th scope="col" data-width="150px">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody_data">
+
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/sockjs.min.js"></script>
+  <script src="/static/js/util.js"></script>
+  <script src="/static/js/md5.js"></script>
+  <script src="/static/js/pageToExcel.js"></script>
+</body>
+<script>
+
+  var webData;
+
+  var MAX_REQUEST_DETAIL_TIME = 100;
+
+  var COOKIE_EMU = {WEBDATA:"dss_webData",POSTPAR:"dss_postPar"};
+
+  var pageIndex = $("#serachPage").val();
+
+
+  $("#tb_search_submit").click(function(){  // 修改提示语
+      document.getElementsByClassName('gray')[0].setAttribute('data-hint',"数据可以下载");
+    }
+  );
+
+  
+  function restoreByCookie(){
+
+    var cookieDatas = localStorage.getItem(COOKIE_EMU.WEBDATA);
+    var cookiePars = localStorage.getItem(COOKIE_EMU.POSTPAR);
+
+    if(cookieDatas){
+
+      cookieDatas = JSON.parse(cookieDatas);
+        console.log("01");
+        console.log(cookieDatas);
+      parseListData(cookieDatas);
+
+      for (var i = 0; i < cookieDatas.length; i++) {
+
+        console.log(cookieDatas[i]);
+        parseDetailData(cookieDatas[i]);
+
+      }
+
+    }
+
+    if(cookiePars){
+
+      cookiePars = JSON.parse(cookiePars);
+
+      if(cookiePars.type){
+        $("#serachType").val(cookiePars.type);
+      }
+
+      $("#tb_search_key").val(cookiePars.key);
+
+      if(cookiePars.sort&&cookiePars.sort!=""){
+        $("#serachSort").val(cookiePars.sort);
+      }
+      
+
+      if(cookiePars.page){
+        $("#serachPage").val(cookiePars.page);
+      }
+
+    }
+
+  }
+    
+  function getList() {
+    {#alert(1)#}
+    clearAllDetailTask();
+
+    pageIndex = $("#serachPage").val();
+
+    $("#tbody_data").html("<img src='/static/img/gif/ajax_loader.gif'/>");
+
+    var postPar = { type: $("#serachType").val(), key: $("#tb_search_key").val(), sort: $("#serachSort").val(), page: pageIndex, guid:get_uuid()};
+    
+    if(!postPar.key){
+      
+      return;
+
+    }
+
+    $.post("/get_search", postPar, function (data) {
+      getLastQuery();
+
+      if (data && data != "" && data.length>0) {
+
+        webData = data;
+
+        localStorage.setItem(COOKIE_EMU.WEBDATA,JSON.stringify(webData));
+
+        localStorage.setItem(COOKIE_EMU.POSTPAR,JSON.stringify(postPar));
+
+        parseListData(data);
+
+        for (var i = 0; i < data.length; i++) {
+            {#var dataList = JSON.parse(str);#}
+            {#alert(dataList);#}
+
+          {#getTaskDetail(data[i].goods.id);#}
+
+        }
+
+      }
+
+    });
+
+    return false;
+
+  }
+
+  window.onbeforeunload = function(event) {  // onbeforeunload 即将离开当前页面,刷新或关闭页面时执行
+    clearAllDetailTask();
+
+  };
+
+  function clearAllDetailTask(){
+    for(var i=0;i<TASK_LIST.length;i++){
+
+      var task = TASK_LIST[i];
+
+      {#task.sock.send('{"nid":"'+task.nid+'","action":"stopTask"}');#}
+
+      task.sock.close();
+
+      task.sock = null;
+
+    }
+
+    TASK_LIST.splice(0,TASK_LIST.length);
+
+  }
+
+  function getTaskDetail(nid) {
+
+    var task = {};
+
+    task.nid = nid;
+
+    task.detailTaskStatus = "await";
+
+    task.sock = new WebSocket("ws://"+window.location.host+"/task");
+
+    task.sock.onopen = function(e) {
+
+      //console.log("["+task.nid+"] socket open");
+      task.sock.send('{"nid":"'+task.nid+'","action":"register"}');//注册
+
+    };
+
+    task.sock.onclose = function(e) {
+
+      //console.log("["+task.nid+"] socket close");
+
+    };
+
+    task.sock.onmessage = function(e) {
+
+      //console.log("["+task.nid+"] socket message:",e.data.length>100?"任务数据":e.data);
+
+        if(e.data){
+
+          var data = JSON.parse(e.data);
+
+          if(data){
+
+            if(data.msg){
+
+              if(data.msg === "error"){
+
+                parseDetailError(data.nid);
+
+              }
+
+            }else {
+
+              parseDetailData(data);
+
+              if(data && data.goods && data.goods.id){
+
+                for(var i = 0; i < webData.length; i++){
+
+                  debugger;
+
+                  if(webData[i] && webData[i].goods && webData[i].goods.id == data.goods.id){
+
+                    webData[i] = data;
+
+                  }
+
+                }
+
+                localStorage.setItem(COOKIE_EMU.WEBDATA,JSON.stringify(webData));
+
+              }
+
+              if(data.detailTaskStatus == "endSpider"){
+
+                task.sock.close();
+
+              }
+
+            }
+
+          }
+
+        }
+
+    };
+
+    task.sock.onerror = function(e) {
+
+      console.err("["+task.nid+"] socket error");
+
+    };
+
+    //task.sock.close();
+
+    TASK_LIST.push(task);
+
+  }
+
+  function parseDetailError(nid){
+
+    if(!$("tr[good-id='" + nid + "'] .dsr").html()){
+      $("tr[good-id='" + nid + "'] .dsr").html("-");
+    }
+
+    if(!$("tr[good-id='" + nid + "'] .xinyong").html()){
+      $("tr[good-id='" + nid + "'] .xinyong").html("-");
+    }
+
+    if(!$("tr[good-id='" + nid + "'] .shoucang").html()){
+      $("tr[good-id='" + nid + "'] .shoucang").html("-");
+    }
+
+    if(!$("tr[good-id='" + nid + "'] .optss").html()){
+      $("tr[good-id='" + nid + "'] .optss").html("-");
+    }
+
+  }
+
+
+
+  function parseListData(data){
+
+    var tritemHtml = "";
+
+
+    for (var i = 0; i < data.length; i++) {
+
+      var goods = data[i].goods;
+
+      var shop = data[i].shop;
+
+      var seller = data[i].seller;
+
+
+
+      if(!goods){continue;}
+      //初始化表格
+      tritemHtml += "<tr good-id='" + goods.id + "' shop-id='" + shop.id + "' seller-id='" + seller.id + "'>" +
+
+        "<td  width='80' >第"+data[i]['page_order']+"页</br>总排名：" + data[i]['rank_order'] + "</td>" +
+
+        "<td width='54' class='img'><a class='showImg' target='view_window' target='_blank' href='" + goods.picSrc + "' rel='" + goods.picSrc + "'><img src='" + goods.picSrc + "'  /></a><div class='show_box'><img class='img-thumb' src='" + goods.picSrc + "' /></div></td>" +
+
+        "<td width='450' class='title'><span class='hint--bottom hint--info hint--title' data-hint='" + removeHTMLTag(goods.title) + "' ><a target='view_window' href='" + goods.goods_detail_url + "' class='hint--right' aria-label='点击进入宝贝详情'>" + removeHTMLTag(goods.title) + "</a></span></td>";
+
+      if (goods.is_tmall == 1) {
+
+        tritemHtml += "<td width='90' class='tianmaotaobao'><span style='color:#FF0036'>天猫</span></td>";
+
+      } else {
+
+        tritemHtml += "<td width='90' class='tianmaotaobao'><span style='color:#f40'>淘宝</span></td>";
+
+      }
+      
+      if(goods.wwimUrl){
+
+        goods.shop_click_url = goods.wwimUrl
+
+      }
+      //dsr
+
+      if (shop.dsr != undefined) {
+        // var dsrJson = JSON.parse(shop.dsr);
+        var dsrstr = "【DSR】\n描述：" + shop.dsr.description + "  \n服务：" + shop.dsr.service + "  \n物流：" + shop.dsr.delivery + "";
+        var dsrHtml = "<span class='hint--bottom hint--info hint--title' data-hint='" + dsrstr + "' >" + shop.dsr.description + "</span>";
+        // $("tr[good-id='" + goods.id + "'] .dsr").html(dsrHtml);
+      }else {
+          var dsrstr = "【DSR】\n描述：''  服务：''  物流：''";
+          var dsrHtml = "<span class='hint--bottom hint--info hint--title' data-hint='" + dsrstr + "' >" + "暂无" + "</span>";
+          {#var dsrHtml = "<span class='hint--bottom hint--info hint--title' data-hint='" + dsrstr + "' ><a  target='view_window' href='#'>" + "暂无" + "</a></span>";#}
+
+      }
+
+      tritemHtml += "<td width='60' class='price'>" + goods.price + "</td>" +
+
+        "<td width='60' class='sales_count'>" + goods.sales_count + "</td>" +
+
+        "<td width='60' class='confirm_sales_count'>" + goods.confirm_sales_count + "</td>" +
+
+        "<td width='60' class='repertory'>0</td>" +
+
+        "<td width='170' class='shopname'><span class='hint--bottom hint--info hint--title' data-hint='" + shop.name + "' ><a  target='view_window' href='" + goods.shop_click_url + "' class='hint--right' aria-label='点击进入店铺'>" + shop.name + "</a></span></td>" +
+
+        // "<td  width='54' class='dsr'><img src='/static/img/gif/ajax_loader.gif'/></td>" +//DSR
+        "<td  width='54' class='dsr'>"+ dsrHtml +"</td>" +//DSR
+
+        // "<td  width='130' class='xinyong'><img src='/static/img/gif/ajax_loader.gif'/></td>" +//信用
+        "<td  width='130' class='xinyong'><img src="+get_rank_icon(seller)+" alt='"+seller.sellerCredit+"' /></td>" +//信用
+
+        "<td width='82' class='shoplocation'>" + goods.shop_location + "</td>" +
+
+        "<td width='82' class='dbst'></td>" +//下架剩余
+
+        "<td  width='60' class='shoucang'><img src='/static/img/gif/ajax_loader.gif'/></td>" + //收藏
+
+        "<td width='60' class='pingjia'>" + goods.comment_count + "</td>" +//评价
+
+        "<td width='150' class='optss'></td>";  
+
+    }
+
+
+
+    $("#tbody_data").html(tritemHtml);
+
+    $(".showImg").hover(function (e) {
+
+      $(this).parent().find(".show_box").show();
+
+    }, function (e) {
+
+      $(this).parent().find(".show_box").hide();
+
+    });
+
+
+  }
+
+  function parseDetailData(data){
+      {#alert("parseDetailData");#}
+
+    if (data != undefined && data != "" && data.goods) {
+        {#alert("parseDetailData 进入if");#}
+
+      //执行成功，设置数据
+      var goods = data.goods;
+
+      var shop = data.shop;
+
+      var seller = data.seller;
+      console.log(seller);
+
+      //商品详细信息
+      var gooddetail = "宝贝标题：" + goods.title + "\n" +
+
+        "库存：" + goods.repertory + "；邮费：" + goods.postage + "；\n类目：" + goods.categoryStr + "\n";
+
+      if(goods.attrJsonList){
+
+        var attrJson = JSON.parse(goods.attrJsonList);
+
+        for (var arri = 0; attrJson && arri < attrJson.length; arri++) {
+
+          var jibenxinxi = attrJson[arri];
+
+          for (var key1 in jibenxinxi) {
+
+            var attrs = jibenxinxi[key1];
+
+            for (var key2 in attrs) {
+
+              var attrs3 = attrs[key2];
+
+              for (var key3 in attrs3) {
+
+                gooddetail = gooddetail + key3 + ":" + attrs3[key3] + "\n";
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+      
+
+      //详情
+      $("tr[good-id='" + goods.id + "'] .title span").attr("data-hint", gooddetail);
+
+      //shop url
+      $("tr[good-id='" + goods.id + "'] .shopname a").attr("href", "http://shop" + shop.id + ".taobao.com");
+
+      $("tr[good-id='" + goods.id + "'] .shopname span").attr("data-hint", "店名：" + shop.name + "\n宝贝数量：" + shop.allItemCount + "\n好评率：" + shop.goodRatePercentage + "\n开店时间：" + shop.starts + "\n店铺粉丝数：" + shop.fans);
+
+      //shop location
+      $("tr[good-id='" + goods.id + "'] .shoplocation").html(shop.location);
+
+      //销量
+      
+      var old_sales_count = $("tr[good-id='" + goods.id + "'] .sales_count").text();
+      
+      if ((old_sales_count==0||old_sales_count=="0"||old_sales_count.length<=0)&&(goods.sales_count != undefined && goods.sales_count != 0)) {
+
+        $("tr[good-id='" + goods.id + "'] .sales_count").html(goods.sales_count);
+
+      }
+      
+      old_sales_count = $("tr[good-id='" + goods.id + "'] .sales_count").text();
+      
+      //销量量
+      if ((old_sales_count==0||old_sales_count=="0"||old_sales_count.length<=0)&&(goods.sales_count_for_30day != undefined && goods.sales_count_for_30day != 0)) {
+
+        $("tr[good-id='" + goods.id + "'] .sales_count").html(goods.sales_count_for_30day);
+
+      }
+      //dsr
+      if (shop.dsr != undefined) {
+
+        var dsrJson = JSON.parse(shop.dsr);
+
+        var dsrstr = "店铺DSR :  宝贝描述：" + dsrJson.miaoshu + "  服务：" + dsrJson.fuwu + "  物流：" + dsrJson.wuliu
+
+        var dsrHtml = "<span class='hint--bottom hint--info hint--title' data-hint='" + dsrstr + "' ><a  target='view_window' href='#'>" + dsrJson.miaoshu + "</a></span>"
+
+        $("tr[good-id='" + goods.id + "'] .dsr").html(dsrHtml);
+
+      }
+
+      //信用(只有淘宝有？)
+      {#if (shop.rank != undefined && shop.rank != 0) {#}
+      {#alert(seller.sellerCredit);#}
+      // if (seller.sellerCredit != undefined && seller.sellerCredit != 0) {
+      if (seller.sellerCredit) {
+          {#alert("seller.sellerCredit");#}
+        /**
+         * http://img.alicdn.com/newrank/s_red_1.gif
+         * http://img.alicdn.com/newrank/s_blue_1.gif
+         * https://img.alicdn.com/newrank/s_cap_1.gif
+         * https://img.alicdn.com/newrank/s_crown_1.gif
+         */
+        var rankImgSrc = "http://img.alicdn.com/newrank/s_";
+
+        switch (Math.floor((seller.sellerCredit - 1) / 5)) {
+
+          case 0:
+
+            rankImgSrc = rankImgSrc + "red"; break;
+
+          case 1:
+
+            rankImgSrc = rankImgSrc + "blue"; break;
+
+          case 2:
+
+            rankImgSrc = rankImgSrc + "cap"; break;
+
+          case 3:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+          case 4:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+        }
+
+        rankImgSrc = rankImgSrc + "_" + ((seller.sellerCredit + 4) % 5 + 1) + ".gif";
+
+        $("tr[good-id='" + goods.id + "'] .xinyong").html("<img src='" + rankImgSrc + "'/>");
+
+        $("tr[good-id='" + goods.id + "'] .xinyong").attr("rank-level", seller.sellerCredit);
+
+      }
+
+      //下架剩余
+      if (goods.dbst != undefined && goods.dbst != 0) {
+
+        $("tr[good-id='" + goods.id + "'] .xiajiashengyu").html(time2DateStr(goods.dbst))
+
+      }
+
+      //收藏
+      if (goods.collect_count != undefined) {
+
+        $("tr[good-id='" + goods.id + "'] .shoucang").html(goods.collect_count);
+
+      }
+
+      //评价
+      if (goods.comment_count != undefined) {
+
+        $("tr[good-id='" + goods.id + "'] .pingjia").html(goods.comment_count);
+
+      }
+
+      
+
+      //收货量
+      if (goods.confirm_sales_count) {
+
+        $("tr[good-id='" + goods.id + "'] .confirm_sales_count").html(goods.confirm_sales_count);
+
+      }
+
+      // 信用
+      if (seller.sellerCredit != undefined && seller.sellerCredit != 0) {
+
+        /**
+         * http://img.alicdn.com/newrank/s_red_1.gif
+         * http://img.alicdn.com/newrank/s_blue_1.gif
+         * https://img.alicdn.com/newrank/s_cap_1.gif
+         * https://img.alicdn.com/newrank/s_crown_1.gif
+         */
+
+        var rankImgSrc = "http://img.alicdn.com/newrank/s_";
+
+        switch (Math.floor((seller.sellerCredit - 1) / 5)) {
+
+          case 0:
+
+            rankImgSrc = rankImgSrc + "red"; break;
+
+          case 1:
+
+            rankImgSrc = rankImgSrc + "blue"; break;
+
+          case 2:
+
+            rankImgSrc = rankImgSrc + "cap"; break;
+
+          case 3:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+          case 4:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+        }
+
+        rankImgSrc = rankImgSrc + "_" + ((seller.sellerCredit + 4) % 5 + 1) + ".gif";
+
+        $("tr[good-id='" + goods.id + "'] .xinyong").html("<img src='" + rankImgSrc + "'/>");
+
+        $("tr[good-id='" + goods.id + "'] .xinyong").attr("rank-level", seller.sellerCredit);
+
+      }
+
+
+
+      //库存
+      if (goods.repertory) {
+
+        $("tr[good-id='" + goods.id + "'] .repertory").html(goods.repertory);
+
+      }else {
+      	$("tr[good-id='" + goods.id + "'] .repertory").html("0");
+      }
+
+      //下架时间
+      if (goods.dbst) {
+
+        var DBST_ZQ = 1000 * 60 * 60 * 24 * 7;
+
+        var DBST_cha = DBST_ZQ - ((new Date().getTime() - goods.dbst) % (DBST_ZQ));
+
+        var DBST_TIAN = Math.floor(DBST_cha / (1000 * 60 * 60 * 24));
+
+        var DBST_SHI = Math.floor((DBST_cha % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        var DBST_FEN = Math.floor(((DBST_cha % (1000 * 60 * 60 * 24)) % (1000 * 60 * 60)) / (1000 * 60));
+
+        var DBST_html = "";
+
+        if (DBST_TIAN > 1) {//XX 天
+
+          DBST_html = DBST_TIAN + "天";
+
+        }
+
+        if (DBST_SHI > 1) {//XX 小时
+
+          DBST_html = DBST_html + DBST_SHI + "时";
+
+        }
+
+        if (DBST_FEN > 1) {//XX 小时
+
+          DBST_html = DBST_html + DBST_FEN + "分";
+
+        }
+
+        $("tr[good-id='" + goods.id + "'] .dbst").html(DBST_html);
+
+      }
+
+      //optss
+      $("tr[good-id='" + goods.id + "'] .optss").html("<a target='view_window' href='/detail.html?iscache=true&nid=" + goods.id + "'>宝贝详情</a> | <a  target='view_window' href='/shopsgood.html?nid=" + goods.id + "&shopId=" + shop.id + "'>店铺详情</a>");
+
+      }
+
+  }
+
+  var TASK_LIST = [];
+  
+  function get_rank_icon(seller) {
+      //信用(只有淘宝有？)
+      // if (seller.sellerCredit != undefined && seller.sellerCredit != 0) {
+      if (seller.sellerCredit) {
+        /**
+         * http://img.alicdn.com/newrank/s_red_1.gif
+         * http://img.alicdn.com/newrank/s_blue_1.gif
+         * https://img.alicdn.com/newrank/s_cap_1.gif
+         * https://img.alicdn.com/newrank/s_crown_1.gif
+         */
+        var rankImgSrc = "http://img.alicdn.com/newrank/s_";
+
+        switch (Math.floor((seller.sellerCredit - 1) / 5)) {
+
+          case 0:
+
+            rankImgSrc = rankImgSrc + "red"; break;
+
+          case 1:
+
+            rankImgSrc = rankImgSrc + "blue"; break;
+
+          case 2:
+
+            rankImgSrc = rankImgSrc + "cap"; break;
+
+          case 3:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+          case 4:
+
+            rankImgSrc = rankImgSrc + "crown"; break;
+
+        }
+
+        rankImgSrc = rankImgSrc + "_" + ((seller.sellerCredit + 4) % 5 + 1) + ".gif";
+        {#alert(rankImgSrc);#}
+        return rankImgSrc
+
+        //$("tr[good-id='" + goods.id + "'] .xinyong").html("<img src='" + rankImgSrc + "'/>");
+        //$("tr[good-id='" + goods.id + "'] .xinyong").attr("rank-level", seller.sellerCredit);
+
+      }else {
+          rankImgSrc = '/static/img/png/未展示.png';
+          return rankImgSrc
+      }
+  }
+
+  // restoreByCookie();
+  function getLastQuery(){
+    return document.getElementById('last-query').value
+  }
+
+</script>
+
+</html>
