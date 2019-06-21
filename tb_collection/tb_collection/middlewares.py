@@ -13,6 +13,7 @@ import string
 import requests
 from scrapy import signals
 from tb_collection.settings import proxyServer, proxyAuth, UA_LIST, SIGN_API_TEMP, MAIL_CONFIG
+from tb_collection.utils.gps import generate_random_gps
 from tb_collection.utils.handle_email import emailer
 
 
@@ -174,8 +175,9 @@ class TbCollectionDownloaderMiddleware(object):
         deviceId=self.stringRandom(44)
         utdid=self.stringRandom(24)
         t=str(time.time())[:10]
-        lng = '119.99023'
-        lat = '30.275328'
+        # lng = '119.99023'
+        # lat = '30.275328'
+        lng,lat = generate_random_gps(base_log=120.7, base_lat=30, radius=1000000)
         data_quote=re.findall('data=(.*)',request.url)[0]
         unquote_data=parse.unquote(data_quote)
         data=json.loads(unquote_data)
