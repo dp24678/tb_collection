@@ -175,4 +175,11 @@ def get_ua_data(file_path):
 # UA 数据,用于创建cookie池
 UA_LIST = get_ua_data('./tb_collection/rely/fake_useragent-0.1.11.json')
 
-print(len(UA_LIST))
+
+# 邮件预警系统相关信息
+MAIL_CONFIG = {
+    'sender_email':'13503998870@163.com', #发送预警邮件的邮箱账号
+    'sender_password':'wangyi123',  #邮箱授权码
+    'receive_email':'248312738@qq.com',  #要接收邮件的地址
+    'mail_title':'爬虫异常预警'  #邮件标题
+}
