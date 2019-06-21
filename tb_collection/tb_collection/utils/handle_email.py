@@ -48,15 +48,18 @@ class EmailHandler(object):
             self.server.sendmail(self.sender_email,To,msg.as_string())
             print("【%s】邮件发送成功"%subject)
             return True
-        except Exception as f:
-            print("【%s】邮件发送失败,请检查信息"%subject)
+        except Exception as e:
+            print("【%s】邮件发送失败,请检查信息：%s"%(subject,e))
             return False
+
+
+emailer = EmailHandler(MAIL_CONFIG['sender_email'], MAIL_CONFIG['sender_password'])
 
 
 
 if __name__ == '__main__':
-    emailer = EmailHandler(MAIL_CONFIG['sender_email'], MAIL_CONFIG['sender_password'])
-    emailer.send_mail(MAIL_CONFIG['receive_email'],MAIL_CONFIG['mail_title'], "恭喜你被阿里巴巴录取了")
+    # emailer = EmailHandler(MAIL_CONFIG['sender_email'], MAIL_CONFIG['sender_password'])
+    emailer.send_mail(MAIL_CONFIG['receive_email'],MAIL_CONFIG['mail_title'], "恭喜你被阿里巴巴录取了,hh")
 
 #
 # import smtplib

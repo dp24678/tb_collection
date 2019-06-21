@@ -62,12 +62,11 @@ class TbSpiderSpider(RedisSpider):
     def parse_pc(self, response):
         print('进入parse——pc')
         search_args = response.meta['search_args']
-        now_page_num = response.meta['now_page_num']
-        print(199,search_args)
+        # now_page_num = response.meta['now_page_num']
 
         search_uuid = search_args['search_uuid']
-        query = search_args['keyword']
-        data_sources = search_args['data_sources']
+        # query = search_args['keyword']
+        # data_sources = search_args['data_sources']
 
         page_str = response.text
         # 将抓取到的页面数据插入到Mongodb数据库中
@@ -92,7 +91,6 @@ class TbSpiderSpider(RedisSpider):
             # 相同数据
             index = data_list_info.index(i)
             rank_order = (index + 1) + (page_order-1)*44  # 总排名
-            # rank_order = index + 1
             title = i["raw_title"]  # 标题
             is_tmall = 1 if  i["shopcard"]["isTmall"] is True else 0  # 是否是天猫
             price = i["view_price"]  # 价格
@@ -367,7 +365,6 @@ class TbSpiderSpider(RedisSpider):
 
 
     def parse_sales_str_app(self,sales_str):
-        view_sales = 0
         print("sales_str:", sales_str)
         if "万" in sales_str:
             sales_str = sales_str.replace("万", "")

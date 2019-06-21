@@ -5,20 +5,15 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 import json
-import logging
 import random
 import re
 import time
 from urllib import parse
 import string
-
-import redis
 import requests
 from scrapy import signals
-from scrapy.downloadermiddlewares.retry import RetryMiddleware
-from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
-from tb_collection.settings import proxyServer, proxyAuth, UA_LIST
-from tb_collection.utils.handle_redis import redis_queue
+from tb_collection.settings import proxyServer, proxyAuth, UA_LIST, SIGN_API_TEMP, MAIL_CONFIG
+from tb_collection.utils.handle_email import emailer
 
 
 class TbCollectionSpiderMiddleware(object):
@@ -106,21 +101,15 @@ class TbCollectionDownloaderMiddleware(object):
         if data_sources == 'APP':
             self.set_header(request)
         else:
-            self.cookie_info_str = requests.get('http://192.168.221.160:5000/get_cookie').text
+            self.cookie_info_str = requests.get('http://192.168.3.11:5000/get_cookie').text
             cookie_info_dict = json.loads(self.cookie_info_str)
             print(type(json.loads(self.cookie_info_str)))
             # self.username = cookie_info_dict['username']
             cookie_str = cookie_info_dict['cookie']
             cookie_dict = json.loads(cookie_str)
             request.cookies = cookie_dict  # 设置cookie
-
-        # 设置cookie
-        # cookie = transCookie(COOKIES)
-        # request.cookies = cookie.stringToDict()
-        # request.cookies = redis_queue.get_cookie()   #设置cookie
-
-        print("request.headers['User-Agent']:",request.headers['User-Agent'])
-        print("request.cookies:",request.cookies)
+            print("request.headers['User-Agent']:", request.headers['User-Agent'])
+            print("request.cookies:", request.cookies)
 
         return None
 
@@ -135,24 +124,24 @@ class TbCollectionDownloaderMiddleware(object):
                 text_dict = json.loads(response.text)
                 print(text_dict)
                 items_list = text_dict["data"]["itemsArray"]
-                print(items_list)
                 data_str = None if len(items_list) < 0 else 2
-            except:
+            except Exception as e:
                 data_str = None
-                print("=========获取异常 data_str：%s==========" % data_str)
+                print("=========解析数据时异常 data_str：%s====数据来源：%s======" % (data_str, data_sources))
 
         else:
             data_str = None
-            print("=========获取异常 data_str：%s==========" % data_str)
+            print("=========解析数据时异常 data_str：%s====数据来源错误：%s======" % (data_str,data_sources))
 
 
         if data_str == None:
-            requests.get('http://192.168.221.160:5000/delete_cookie/{}'.format(self.cookie_info_str))
+            print('删除所用cookie')
+            requests.get('http://192.168.3.11:5000/delete_cookie/{}'.format(self.cookie_info_str))
             # 重新发起请求
             request_retry = request.copy()
-            cookie_info_str = requests.get('http://192.168.221.160:5000/get_cookie').text
+            print('重新获取cookie数据后 requests重试')
+            cookie_info_str = requests.get('http://192.168.3.11:5000/get_cookie').text
             cookie_info_dict = json.loads(cookie_info_str)
-            print(type(json.loads(cookie_info_str)))
             self.username = cookie_info_dict['username']
             cookie_str = cookie_info_dict['cookie']
             cookie_dict = json.loads(cookie_str)
@@ -218,10 +207,14 @@ class TbCollectionDownloaderMiddleware(object):
             "deviceId": deviceId,
             "features": '27',
         }
-        url = 'http://47.100.60.78/app/sign?key=763092&data=' + parse.quote(json.dumps(postData))
+        url = SIGN_API_TEMP + parse.quote(json.dumps(postData))
         response = requests.get(url)
         arr = response.text
-        return json.loads(arr)
+        if "'code':200" in arr:
+            return json.loads(arr)
+        else:
+            print('======获取sign失败，请检查后使用======')
+            emailer.send_mail(MAIL_CONFIG['receive_email'], MAIL_CONFIG['mail_title'], MAIL_CONFIG['mail_content_1'])
 
     def stringRandom(self,n):
         ran_str = ''.join(random.sample(string.ascii_letters + string.digits, n))
@@ -297,34 +290,6 @@ class TbCollectionDownloaderMiddleware(object):
 #             self.logger.warning('连接异常, 进行重试...')
 #
 #             return self._retry(request, exception, spider)
-
-
-
-
-
-
-
-
-
-
-
-
-class transCookie:
-    def __init__(self, cookie):
-        self.cookie = cookie
-
-    def stringToDict(self):
-        '''
-        将从浏览器上Copy来的cookie字符串转化为Scrapy能使用的Dict
-        :return:
-        '''
-        itemDict = {}
-        items = self.cookie.split(';')
-        for item in items:
-            key = item.split('=')[0].replace(' ', '')
-            value = item.split('=')[1]
-            itemDict[key] = value
-        return itemDict
 
 
 # class CookiesMiddleware(RetryMiddleware):
