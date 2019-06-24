@@ -41,7 +41,7 @@ ACCOUNT_PASSWORD = [
     # ('tb601388587','a570500602','LUA79AJR9'),  # 获取不到验证码
     # ('tb474248673','a570500602','1TJ6H4P0E'),  # 冻结
     # ('tb604869689','a570500602','3JK2AARUL'),  # 冻结
-    ('tb236848759','a570500602','8GN2T2YW5'),
+    # ('tb236848759','a570500602','8GN2T2YW5'),
     # ('tb832164211','a570500602','WEQT3M4F7'),  # 冻结
     # ('tb645592441','a570500602','5IO2O8UCE'),  # 刮小鸡
     #('tb371219426','a570500602','YCWUP12VT'),  #账号冻结
@@ -55,3 +55,12 @@ js1 = '''() =>{ Object.defineProperties(navigator,{ webdriver:{ get: () => false
 js2 = '''() =>{ window.navigator.chrome = { runtime: {},  }; }'''
 js3 = '''() =>{ Object.defineProperty(navigator, 'languages', { get: () => ['zh-CN', 'zh'] }); }'''
 js4 = '''() =>{ Object.defineProperty(navigator, 'plugins', { get: () => [0,1,2], }); }'''
+
+
+# 邮件预警系统相关信息
+MAIL_CONFIG = {
+    'sender_email':'13503998870@163.com', #发送预警邮件的邮箱账号
+    'sender_password':'wangyi123',  #邮箱授权码
+    'receive_email':'248312738@qq.com',  #要接收邮件的地址
+    'mail_title':'salve端-异常预警',  #邮件标题
+}
