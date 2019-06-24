@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-import asyncio
 import json
 import re
-import time
-from threading import Thread
 import scrapy
-from scrapy import Spider
 from scrapy_redis.spiders import RedisSpider
 from tb_collection.items import TbCollectionItem
 from tb_collection.utils.handle_redis import redis_queue
@@ -26,13 +22,12 @@ class TbSpiderSpider(RedisSpider):
 
     def make_requests_from_url(self, data):
         data__ = data.replace('\'','\"')
-        print(data__)
         data_ = json.loads(data__)
 
         search_args = data_["search_args"]  # 搜索参数
         url = data_["url"]
         now_page_num = data_['now_page_num']
-        print("当前页：",now_page_num)
+        self.logger.info("当前生成请求的页码：",now_page_num)
         data_sources = search_args['data_sources']
         print(data_sources)
 
@@ -62,11 +57,8 @@ class TbSpiderSpider(RedisSpider):
     def parse_pc(self, response):
         print('进入parse——pc')
         search_args = response.meta['search_args']
-        # now_page_num = response.meta['now_page_num']
 
         search_uuid = search_args['search_uuid']
-        # query = search_args['keyword']
-        # data_sources = search_args['data_sources']
 
         page_str = response.text
         # 将抓取到的页面数据插入到Mongodb数据库中
@@ -79,7 +71,7 @@ class TbSpiderSpider(RedisSpider):
         data_dict = json.loads(data_str)
         with open("data.json", "w", encoding='utf8') as f:
             f.write(data_str)
-        # page_order：当前页码
+
         page_order = data_dict["mods"]["pager"]["data"]["currentPage"]  # 页码序号
         print('page_order:',page_order)
         data_list_info = data_dict["mods"]["itemlist"]["data"]["auctions"] # 商品列表
@@ -124,78 +116,6 @@ class TbSpiderSpider(RedisSpider):
             except Exception as e:
                 print(245,e)
 
-                # view_sales = 0
-            # pay_count = 0
-            # print("sales_str:",sales_str)
-            # if "万+" in sales_str:
-            #     sales_str = sales_str.replace("万+", "")
-            #     if "收货" in sales_str:
-            #         view_sales = float(sales_str.replace("人收货", ""))*10000
-            #     else:
-            #         pay_count = float(sales_str.replace("人付款", ""))*10000
-            # elif "+" in sales_str:
-            #     sales_str = sales_str.replace("+", "")
-            #     if "收货" in sales_str:
-            #         view_sales = int(sales_str.replace("人收货", ""))
-            #     else:
-            #         pay_count = int(sales_str.replace("人付款", ""))
-            # else:
-            #     if "收货" in sales_str:
-            #         view_sales = int(sales_str.replace("人收货", ""))
-            #     else:
-            #         pay_count = int(sales_str.replace("人付款", ""))
-            # hh
-
-
-
-            # if "万" in sales_str:
-            #     view_sales = float(re.search("([\d.]*?)万", sales_str).group(1)) * 10000
-            # elif "+" in sales_str:
-            #     view_sales = float(re.search("(\d*?)\+", sales_str).group(1))
-            # else:
-            #     if search_data['sort'] == "sale-desc":  # 销量排序
-            #         view_sales = int(i["view_sales"].replace("人收货", ""))  # 收货人数
-            #     else:
-            #         pay_count = int(i["view_sales"].replace("人付款", ""))  # 付款人数
-            # # if sort_type == "sale-desc":  # 销量排序
-            # #     if "万" in sales_str:
-            # #         view_sales = float(re.search("([\d.]*?)万",sales_str).group(1))*10000
-            # #     elif "+" in sales_str:
-            # #         view_sales = float(re.search("(\d*?)\+", sales_str).group(1))
-            # #     else:
-            # #         view_sales = int(i["view_sales"].replace("人收货",""))  # 收货人数
-            # # else:  # 否则都是，，人付款
-            # #     if "万" in sales_str:
-            # #         view_sales = float(re.search("([\d.]*?)万",sales_str).group(1))*10000
-            # #     elif "+" in sales_str:
-            # #         view_sales = float(re.search("(\d*?)\+", sales_str).group(1))
-            # #     else:
-            # #         view_sales = int(i["view_sales"].replace("人付款",""))  # 收货人数
-            #
-            #
-            #
-            # # if sort_type == "sale-desc":  # 销量排序
-            # #     if "万" in sales_str:
-            # #         view_sales = float(re.search("([\d.]*?)万",sales_str).group(1))*10000
-            # #     elif "+" in sales_str:
-            # #         view_sales = float(re.search("(\d*?)\+", sales_str).group(1))
-            # #     else:
-            # #         view_sales = int(i["view_sales"].replace("人收货",""))  # 收货人数
-            # # elif sort_type == "default":  # 默认排序
-            # #     if "万" in sales_str:
-            # #         view_sales = float(re.search("([\d.]*?)万",sales_str).group(1))*10000
-            # #     elif "+" in sales_str:
-            # #         view_sales = float(re.search("(\d*?)\+", sales_str).group(1))
-            # #     else:
-            # #         view_sales = int(i["view_sales"].replace("人付款",""))  # 收货人数
-            # # elif sort_type == "credit-desc":  # 信用排序
-            # #     pass
-            # # elif sort_type == "price-asc":  # 价格从低到高
-            # #     pass
-            # # elif sort_type == "price-desc":  # 价格从高到低
-            # #     pass
-            # # else:
-            # #     print(230,"=====排序类型错误=====")
             print(page_order)
             print(rank_order)
             print(title)
@@ -255,14 +175,6 @@ class TbSpiderSpider(RedisSpider):
         #     )
         #     self.i_ += 44
 
-    # t = GetArgs(headers,parse_)
-    # t.start()
-    #
-
-    # import asyncio
-    # loop = asyncio.get_event_loop()  # 创建一个事件循环
-    # loop.run_until_complete(get_args(headers,parse_))  # 将协程加入到事件循环loop
-    # new_loop.run_until_complete(get_args(headers,parse_))
 
     def parse_app(self,response):
         print('进入parse——app')

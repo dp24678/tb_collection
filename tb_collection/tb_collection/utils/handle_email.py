@@ -2,8 +2,8 @@
 #@Time    :2019/6/21 14:48
 #@Author  :Dapan
 #@Email : 248312738@qq.com
-
 #邮件服务封装
+
 import smtplib
 from email.mime.text import MIMEText
 from email.utils import formataddr

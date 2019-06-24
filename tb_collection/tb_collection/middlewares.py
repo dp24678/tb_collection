@@ -96,8 +96,8 @@ class TbCollectionDownloaderMiddleware(object):
         ua = self.polling_get_ua(UA_LIST)  # 生成随机UA,use_cache_server:使用缓存服务器
         request.headers['User-Agent'] = ua  # 将生成的UA写入请求头中
         # 设置代理
-        request.meta["proxy"] = proxyServer
-        request.headers["Proxy-Authorization"] = proxyAuth
+        # request.meta["proxy"] = proxyServer
+        # request.headers["Proxy-Authorization"] = proxyAuth
 
         if data_sources == 'APP':
             self.set_header(request)
@@ -212,9 +212,10 @@ class TbCollectionDownloaderMiddleware(object):
         url = SIGN_API_TEMP + parse.quote(json.dumps(postData))
         response = requests.get(url)
         arr = response.text
-        if "'code':200" in arr:
+        if "200" in arr:
             return json.loads(arr)
         else:
+            print(arr)
             print('======获取sign失败，请检查后使用======')
             emailer.send_mail(MAIL_CONFIG['receive_email'], MAIL_CONFIG['mail_title'], MAIL_CONFIG['mail_content_1'])
 

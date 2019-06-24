@@ -86,9 +86,6 @@ class TbCollectionPipeline(object):  # MYSQL
 
 
 class TbCollectionRedisPipeline(object):
-    page_order = 1
-    rank_order = 1
-
 
     # pipeline默认调用
     def process_item(self, item, spider):
@@ -130,24 +127,26 @@ class TbCollectionRedisPipeline(object):
         shop['dsr']['delivery'] = item['dsr_delivery']
 
         redis_queue.lpush_item(data)  # 将数据添加到队列中
+        spider.loger.info('返回item数据插入redis成功')
         redis_queue.lpush_page_data(data)  # 将数据按照页码的规则插入到对应的页面数据key内
+        spider.loger.info('返回页面缓存数据插入redis成功')
         return item
 
 
 
-class TbCollectionMongodbPipeline(object):
-    def __init__(self):
-        # 创建MONGODB数据库链接
-        client = pymongo.MongoClient(host=MONGODB_HOST, port=MONGODB_PORT)
-        # 指定数据库
-        mydb = client[MONGODB_DBNAME]
-        # 存放数据的数据库表名
-        self.collection = mydb[MONGODB_SHEETNAME]
-
-    def process_item(self, item, spider):
-        data = dict(item)
-        self.collection.insert_one(data)  # 向该集合中插入一条数据
-
-        return item
+# class TbCollectionMongodbPipeline(object):
+#     def __init__(self):
+#         # 创建MONGODB数据库链接
+#         client = pymongo.MongoClient(host=MONGODB_HOST, port=MONGODB_PORT)
+#         # 指定数据库
+#         mydb = client[MONGODB_DBNAME]
+#         # 存放数据的数据库表名
+#         self.collection = mydb[MONGODB_SHEETNAME]
+#
+#     def process_item(self, item, spider):
+#         data = dict(item)
+#         self.collection.insert_one(data)  # 向该集合中插入一条数据
+#
+#         return item
 
 

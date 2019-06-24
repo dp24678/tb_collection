@@ -183,6 +183,10 @@ MAIL_CONFIG = {
     'sender_email':'13503998870@163.com', #发送预警邮件的邮箱账号
     'sender_password':'wangyi123',  #邮箱授权码
     'receive_email':'248312738@qq.com',  #要接收邮件的地址
-    'mail_title':'爬虫异常预警',  #邮件标题
+    'mail_title':'Master端-异常预警',  #邮件标题
     'mail_content_1':'获取sign失败,请检查sign服务器是否可用或请求参数' # 预警邮件内容1
 }
+
+# 日志功能配置信息
+LOG_FILE = "tb_spider.log"
+# LOG_LEVEL = "INFO"
