@@ -27,7 +27,7 @@ class TbSpiderSpider(RedisSpider):
         search_args = data_["search_args"]  # 搜索参数
         url = data_["url"]
         now_page_num = data_['now_page_num']
-        self.logger.info("当前生成请求的页码：",now_page_num)
+        self.logger.info("当前生成请求的页码：%s" % now_page_num)
         data_sources = search_args['data_sources']
         print(data_sources)
 

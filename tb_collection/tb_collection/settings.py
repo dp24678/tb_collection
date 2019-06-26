@@ -188,5 +188,5 @@ MAIL_CONFIG = {
 }
 
 # 日志功能配置信息
-LOG_FILE = "tb_spider.log"
+# LOG_FILE = "tb_spider.log"
 # LOG_LEVEL = "INFO"
