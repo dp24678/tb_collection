@@ -127,7 +127,7 @@ class TbCollectionRedisPipeline(object):
         shop['dsr']['delivery'] = item['dsr_delivery']
 
         redis_queue.lpush_item(data)  # 将数据添加到队列中
-        spider.loger.info('返回item数据插入redis成功')
+        spider.logger.info('返回item数据插入redis成功')
         redis_queue.lpush_page_data(data)  # 将数据按照页码的规则插入到对应的页面数据key内
         spider.logger.info('返回页面缓存数据插入redis成功')
         return item
