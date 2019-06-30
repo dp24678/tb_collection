@@ -22,14 +22,10 @@ proxyPort = "9010"
 
 # 代理隧道验证信息
 proxyUser = "H0026G1TP41J843D"
-proxyPass = "830B52D7F46DA75C"
+proxyPass = "******"
 
 
-# 账号对应获取手机验证码的查询码  ACCESS_CODE:查询码
-ACCESS_CODE={
-'tb604869689':'3JK2AARUL',
-'tb371219426':'YCWUP12VT'
-}
+
 
 # 账户密码
 
