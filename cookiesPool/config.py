@@ -53,8 +53,8 @@ js4 = '''() =>{ Object.defineProperty(navigator, 'plugins', { get: () => [0,1,2]
 
 # 邮件预警系统相关信息
 MAIL_CONFIG = {
-    'sender_email':'13503998870@163.com', #发送预警邮件的邮箱账号
-    'sender_password':'wangyi123',  #邮箱授权码
+    'sender_email':'***', #发送预警邮件的邮箱账号
+    'sender_password':'***',  #邮箱授权码
     'receive_email':'248312738@qq.com',  #要接收邮件的地址
     'mail_title':'salve端-异常预警',  #邮件标题
 }
