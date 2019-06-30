@@ -106,7 +106,7 @@ proxyServer = "http://http-dyn.abuyun.com:9020"
 
 # 代理隧道验证信息
 proxyUser = "H0026G1TP41J843D"
-proxyPass = "830B52D7F46DA75C"
+proxyPass = "******"
 
 proxyAuth = "Basic " + base64.urlsafe_b64encode(bytes((proxyUser + ":" + proxyPass), "ascii")).decode("utf8")
 
@@ -176,12 +176,12 @@ def get_ua_data(file_path):
 UA_LIST = get_ua_data('./tb_collection/rely/fake_useragent-0.1.11.json')
 
 # app x-sign 数据获取接口
-SIGN_API_TEMP = 'http://47.100.60.78/app/sign?key=763092&data='
+SIGN_API_TEMP = '******'
 
 # 邮件预警系统相关信息
 MAIL_CONFIG = {
-    'sender_email':'13503998870@163.com', #发送预警邮件的邮箱账号
-    'sender_password':'wangyi123',  #邮箱授权码
+    'sender_email':'******', #发送预警邮件的邮箱账号
+    'sender_password':'***',  #邮箱授权码
     'receive_email':'248312738@qq.com',  #要接收邮件的地址
     'mail_title':'Master端-异常预警',  #邮件标题
     'mail_content_1':'获取sign失败,请检查sign服务器是否可用或请求参数' # 预警邮件内容1
