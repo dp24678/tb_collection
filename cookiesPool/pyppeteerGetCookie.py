@@ -198,7 +198,7 @@ def getCookie(username,password):
 
 def make_proxy_authorization():
     proxyUser = 'H0026G1TP41J843D'
-    proxyPass = '830B52D7F46DA75C'
+    proxyPass = '*****'
     proxy_authorization = "Basic " + base64.urlsafe_b64encode(bytes((proxyUser + ":" + proxyPass), "ascii")).decode("utf8")
     return proxy_authorization
 
